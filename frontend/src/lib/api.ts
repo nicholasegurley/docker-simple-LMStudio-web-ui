@@ -1,8 +1,45 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8001/api";
+// Get the current host from the browser's location
+const getCurrentHost = () => {
+  if (typeof window !== 'undefined') {
+    return window.location.hostname;
+  }
+  return 'localhost';
+};
+
+// Use the current host for API calls, but fall back to environment variable or localhost
+const API_BASE = import.meta.env.VITE_API_BASE ?? `http://${getCurrentHost()}:8001/api`;
+
+console.log('API Base URL:', API_BASE);
+console.log('Environment VITE_API_BASE:', import.meta.env.VITE_API_BASE);
+console.log('Current Host:', getCurrentHost());
 
 export const api = axios.create({ baseURL: API_BASE });
+
+// Add request interceptor for debugging
+api.interceptors.request.use(
+  (config) => {
+    console.log('Making API request:', config.method?.toUpperCase(), config.url);
+    return config;
+  },
+  (error) => {
+    console.error('Request error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for debugging
+api.interceptors.response.use(
+  (response) => {
+    console.log('API response:', response.status, response.config.url);
+    return response;
+  },
+  (error) => {
+    console.error('API error:', error.response?.status, error.response?.data, error.config?.url);
+    return Promise.reject(error);
+  }
+);
 
 // settings
 export async function getSettings() {
