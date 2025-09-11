@@ -82,7 +82,7 @@ Open your browser and navigate to:
 
 ### Default LM Studio URL
 
-The application defaults to `http://127.0.0.1:1234/v1` if no custom URL is set.
+The application defaults to `http://192.168.4.70:1234/v1` if no custom URL is set.
 
 ## Usage
 
@@ -162,9 +162,10 @@ make test        # Run tests
 ### Backend Issues
 
 1. **"Failed to save settings" or "Failed to refresh models" errors**: 
-   - Ensure the backend server is running: `cd backend && python -m uvicorn app.main:app --host 127.0.0.1 --port 8001`
+   - Ensure the backend server is running: `cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port 8001`
    - Check that you're running the server from the `backend` directory, not the project root
    - Verify all dependencies are installed: `pip install -r requirements.txt`
+   - Check Docker logs: `docker compose logs backend` for detailed error messages
 
 2. **"ModuleNotFoundError: No module named 'app'"**:
    - Make sure you're running uvicorn from the `backend` directory
@@ -185,7 +186,7 @@ make test        # Run tests
 
 ### Docker Issues
 
-1. **Port conflicts**: Change ports in `.env` if 8000 or 5173 are in use
+1. **Port conflicts**: Change ports in `.env` if 8001 or 5173 are in use
 2. **Permission issues**: Ensure Docker has proper permissions
 3. **Volume issues**: Check that the database volume is properly mounted
 

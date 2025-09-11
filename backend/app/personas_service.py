@@ -9,11 +9,17 @@ def list_personas(session: Session) -> List[Persona]:
 
 
 def create_persona(session: Session, name: str, system_prompt: str) -> Persona:
-    p = Persona(name=name, system_prompt=system_prompt)
-    session.add(p)
-    session.commit()
-    session.refresh(p)
-    return p
+    try:
+        p = Persona(name=name, system_prompt=system_prompt)
+        session.add(p)
+        session.commit()
+        session.refresh(p)
+        print(f"Successfully created persona: {name}")
+        return p
+    except Exception as e:
+        print(f"Error creating persona: {e}")
+        session.rollback()
+        raise
 
 
 def update_persona(session: Session, pid: int, name: str, system_prompt: str) -> Optional[Persona]:

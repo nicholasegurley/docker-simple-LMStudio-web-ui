@@ -39,7 +39,7 @@ cp env.example .env
 Edit `.env` if you need to change default ports:
 ```bash
 # Default values
-API_PORT=8000
+API_PORT=8001
 WEB_PORT=5173
 ```
 
@@ -108,7 +108,7 @@ Launch LM Studio and ensure it's running with the OpenAI-compatible API enabled.
 2. Click the settings (⚙️) icon in the top-right
 3. Set the LM Studio Base URL:
    - **Local**: `http://127.0.0.1:1234/v1`
-   - **LAN**: `http://192.168.1.10:1234/v1` (replace with your LM Studio machine's IP)
+   - **LAN**: `http://192.168.4.70:1234/v1` (default, replace with your LM Studio machine's IP)
 4. Click "Refresh Models" to load available models
 5. Save your settings
 

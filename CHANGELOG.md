@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Critical Bug**: Missing FastAPI backend application causing "Failed to save settings" and "Failed to refresh models" errors
 - **Backend Implementation**: Created complete FastAPI application with all required endpoints
 - **Server Startup**: Fixed uvicorn server startup issues when running from wrong directory
+- **Docker Configuration**: Fixed port mismatch between main.py (8000) and Dockerfile (8001)
+- **Database Permissions**: Added proper directory creation and permissions for SQLite database in Docker
+- **Pydantic Validation**: Fixed URL validation issues in settings schemas that prevented saving
+- **Error Handling**: Added comprehensive error handling and logging for debugging save operations
+- **Docker Health Checks**: Added health checks and restart policies for better container management
 
 ### Added
 - Complete FastAPI backend application (`backend/app/main.py`)
@@ -20,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CORS middleware configuration for frontend-backend communication
 - Database initialization and session management
 - Comprehensive API documentation via FastAPI auto-generated docs
+- Docker health checks with curl for backend service monitoring
+- Enhanced error logging for debugging save operations
+- Restart policies for Docker containers
+- Improved nginx configuration for better Docker networking
 
 ### Technical Details
 - **Backend**: FastAPI with SQLModel, SQLite, and httpx for LM Studio integration

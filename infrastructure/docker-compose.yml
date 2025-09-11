@@ -10,8 +10,16 @@ services:
       - dbdata:/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
     networks:
       - lmnet
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   frontend:
     build: ../frontend
@@ -24,6 +32,7 @@ services:
       - "${WEB_PORT:-5173}:80"
     networks:
       - lmnet
+    restart: unless-stopped
 
 volumes:
   dbdata:
