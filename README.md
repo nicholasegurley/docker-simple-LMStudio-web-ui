@@ -69,7 +69,7 @@ docker compose up -d --build
 
 Open your browser and navigate to:
 - **Web UI**: http://localhost:5173
-- **API Docs**: http://localhost:8000/docs
+- **API Docs**: http://localhost:8001/docs
 
 ## Configuration
 
@@ -109,7 +109,7 @@ Click the sun/moon icon in the top-right to switch between light and dark themes
 The application is configured to be accessible across your local network:
 
 - **Frontend**: Available on all network interfaces (0.0.0.0:5173)
-- **Backend**: Available on all network interfaces (0.0.0.0:8000)
+- **Backend**: Available on all network interfaces (0.0.0.0:8001)
 - **CORS**: Configured to allow requests from any origin
 
 ## Development
@@ -120,7 +120,7 @@ The application is configured to be accessible across your local network:
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 ```
 
 **Important**: The backend server must be run from the `backend` directory, not the project root.
@@ -162,7 +162,7 @@ make test        # Run tests
 ### Backend Issues
 
 1. **"Failed to save settings" or "Failed to refresh models" errors**: 
-   - Ensure the backend server is running: `cd backend && python -m uvicorn app.main:app --host 127.0.0.1 --port 8000`
+   - Ensure the backend server is running: `cd backend && python -m uvicorn app.main:app --host 127.0.0.1 --port 8001`
    - Check that you're running the server from the `backend` directory, not the project root
    - Verify all dependencies are installed: `pip install -r requirements.txt`
 
@@ -175,7 +175,7 @@ make test        # Run tests
 1. **Check LM Studio URL**: Ensure the URL in settings is correct
 2. **Verify LM Studio is running**: Make sure LM Studio is active and serving on the specified port
 3. **Network connectivity**: For LAN access, ensure both devices are on the same network
-4. **Firewall**: Check that ports 1234 (LM Studio) and 8000/5173 (Web UI) are not blocked
+4. **Firewall**: Check that ports 1234 (LM Studio) and 8001/5173 (Web UI) are not blocked
 
 ### Model Loading Issues
 

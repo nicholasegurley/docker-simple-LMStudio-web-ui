@@ -4,19 +4,19 @@ from sqlmodel import Session
 from typing import List
 import asyncio
 
-from .db import init_db
-from .deps import get_session
-from .models import Persona, Setting
-from .schemas import SettingOut, SettingIn, PersonaIn
-from .settings_service import get_lm_studio_base_url, set_lm_studio_base_url
-from .personas_service import (
+from app.db import init_db
+from app.deps import get_session
+from app.models import Persona, Setting
+from app.schemas import SettingOut, SettingIn, PersonaIn
+from app.settings_service import get_lm_studio_base_url, set_lm_studio_base_url
+from app.personas_service import (
     list_personas,
     create_persona,
     update_persona,
     delete_persona,
     get_persona,
 )
-from .lmstudio_client import LMStudioClient
+from app.lmstudio_client import LMStudioClient
 
 app = FastAPI(title="OpenLLMWeb API", version="1.0.0")
 

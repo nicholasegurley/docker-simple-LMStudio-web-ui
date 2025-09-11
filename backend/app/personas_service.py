@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from .models import Persona
+from app.models import Persona
 from datetime import datetime
 from typing import List, Optional
 

@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
-from .models import Setting
+from app.models import Setting
 
-DEFAULT_URL = "http://127.0.0.1:1234/v1"
+DEFAULT_URL = "http://192.168.4.70:1234/v1"
 
 
 def get_lm_studio_base_url(session: Session) -> str:

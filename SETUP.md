@@ -57,8 +57,8 @@ docker compose up -d --build
 #### 4. Verify Installation
 
 - **Web UI**: http://localhost:5173
-- **API Documentation**: http://localhost:8000/docs
-- **Health Check**: http://localhost:8000/api/healthz
+- **API Documentation**: http://localhost:8001/docs
+- **Health Check**: http://localhost:8001/api/healthz
 
 ### Method 2: Local Development
 
@@ -77,7 +77,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 # Run the server (IMPORTANT: Must be run from backend directory)
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 ```
 
 **Critical**: The backend server must be run from the `backend` directory, not the project root. Running from the wrong directory will result in "ModuleNotFoundError: No module named 'app'" errors.
@@ -123,7 +123,7 @@ Make sure you have models loaded in LM Studio before using the web interface. Th
 The application is configured to be accessible across your local network:
 
 - **Frontend**: Binds to `0.0.0.0:5173`
-- **Backend**: Binds to `0.0.0.0:8000`
+- **Backend**: Binds to `0.0.0.0:8001`
 - **CORS**: Configured to allow requests from any origin
 
 ### Accessing from Other Devices
@@ -248,7 +248,7 @@ npm install
 
 #### API Connection Issues
 
-1. **Check backend status**: Visit http://localhost:8000/api/healthz
+1. **Check backend status**: Visit http://localhost:8001/api/healthz
 2. **Verify CORS**: Check browser console for CORS errors
 3. **Network connectivity**: Ensure frontend can reach backend
 
@@ -261,13 +261,13 @@ These errors occur when the backend server is not running or not accessible:
 1. **Check if backend is running**:
    ```bash
    # Test the health endpoint
-   curl http://localhost:8000/api/healthz
+   curl http://localhost:8001/api/healthz
    ```
 
 2. **Start the backend server**:
    ```bash
    cd backend
-   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
    ```
 
 3. **Verify dependencies are installed**:
@@ -283,14 +283,14 @@ This error occurs when running uvicorn from the wrong directory:
 1. **Make sure you're in the backend directory**:
    ```bash
    cd backend  # Must be in this directory
-   uvicorn app.main:app --host 127.0.0.1 --port 8000
+   uvicorn app.main:app --host 127.0.0.1 --port 8001
    ```
 
 2. **Do NOT run from project root**:
    ```bash
    # WRONG - This will fail
    cd /path/to/OpenLLMWeb
-   uvicorn app.main:app --host 127.0.0.1 --port 8000
+   uvicorn app.main:app --host 127.0.0.1 --port 8001
    ```
 
 #### Database Errors
