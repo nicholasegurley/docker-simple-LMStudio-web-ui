@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session
 from typing import List
 import asyncio
+import logging
 
 from app.db import init_db
 from app.deps import get_session
@@ -20,6 +21,10 @@ from app.lmstudio_client import LMStudioClient
 
 app = FastAPI(title="OpenLLMWeb API", version="1.0.0")
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -28,6 +33,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Request: {request.method} {request.url}")
+    response = await call_next(request)
+    logger.info(f"Response: {response.status_code}")
+    return response
 
 # Initialize database
 init_db()
@@ -49,9 +62,12 @@ async def get_settings(session: Session = Depends(get_session)):
 async def put_settings(settings: SettingIn, session: Session = Depends(get_session)):
     """Update settings"""
     try:
+        logger.info(f"Updating settings with URL: {settings.lm_studio_base_url}")
         set_lm_studio_base_url(session, str(settings.lm_studio_base_url))
+        logger.info("Settings updated successfully")
         return {"message": "Settings updated successfully"}
     except Exception as e:
+        logger.error(f"Failed to save settings: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to save settings: {str(e)}")
 
 
@@ -75,10 +91,13 @@ async def refresh_models(session: Session = Depends(get_session)):
     """Refresh models from LM Studio"""
     try:
         base_url = get_lm_studio_base_url(session)
+        logger.info(f"Refreshing models from LM Studio URL: {base_url}")
         client = LMStudioClient(base_url)
         models = await client.list_models()
+        logger.info(f"Successfully fetched {len(models.get('data', []))} models")
         return {"message": "Models refreshed successfully", "models": models}
     except Exception as e:
+        logger.error(f"Failed to refresh models: {str(e)}")
         raise HTTPException(
             status_code=502,
             detail=f"Failed to refresh models. Check your LM Studio URL and connection: {str(e)}"
@@ -97,8 +116,12 @@ async def create_persona_endpoint(
 ):
     """Create a new persona"""
     try:
-        return create_persona(session, persona.name, persona.system_prompt)
+        logger.info(f"Creating persona: {persona.name}")
+        result = create_persona(session, persona.name, persona.system_prompt)
+        logger.info(f"Persona created successfully with ID: {result.id}")
+        return result
     except Exception as e:
+        logger.error(f"Failed to create persona: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create persona: {str(e)}")
 
 
