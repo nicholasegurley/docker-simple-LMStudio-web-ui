@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ../backend
+    container_name: lmstudio_backend
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - dbdata:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - lmnet
+
+  frontend:
+    build: ../frontend
+    container_name: lmstudio_frontend
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_BASE=http://backend:8000/api
+    ports:
+      - "${WEB_PORT:-5173}:80"
+    networks:
+      - lmnet
+
+volumes:
+  dbdata:
+
+networks:
+  lmnet:
+    driver: bridge
