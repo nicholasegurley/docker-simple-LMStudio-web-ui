@@ -52,3 +52,5 @@ export default function ResultCard({ content, raw }: ResultCardProps) {
     </div>
   )
 }
+
+

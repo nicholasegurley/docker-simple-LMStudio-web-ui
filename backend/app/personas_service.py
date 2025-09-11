@@ -29,6 +29,10 @@ def update_persona(session: Session, pid: int, name: str, system_prompt: str) ->
     return p
 
 
+def get_persona(session: Session, pid: int) -> Optional[Persona]:
+    return session.get(Persona, pid)
+
+
 def delete_persona(session: Session, pid: int) -> bool:
     p = session.get(Persona, pid)
     if not p:
@@ -36,3 +40,4 @@ def delete_persona(session: Session, pid: int) -> bool:
     session.delete(p)
     session.commit()
     return True
+

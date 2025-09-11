@@ -17,3 +17,4 @@ class LMStudioClient:
             r = await client.post(f"{self.base_url}/chat/completions", json=payload)
             r.raise_for_status()
             return r.json()
+

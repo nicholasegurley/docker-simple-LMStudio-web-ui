@@ -20,3 +20,4 @@ lint:
 
 test:
 	cd backend && pytest -q
+

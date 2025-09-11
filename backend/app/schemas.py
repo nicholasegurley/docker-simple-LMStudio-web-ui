@@ -33,3 +33,4 @@ class ChatIn(BaseModel):
 class ChatOut(BaseModel):
     content: str
     raw: dict
+

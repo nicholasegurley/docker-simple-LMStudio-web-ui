@@ -172,3 +172,5 @@ export default function QueryForm({ onResult, onError }: QueryFormProps) {
     </form>
   )
 }
+
+

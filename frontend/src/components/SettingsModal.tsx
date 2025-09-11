@@ -127,3 +127,5 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     </div>
   )
 }
+
+

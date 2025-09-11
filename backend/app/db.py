@@ -8,3 +8,4 @@ engine = create_engine(f"sqlite:///{DB_PATH}", connect_args={"check_same_thread"
 
 def init_db():
     SQLModel.metadata.create_all(engine)
+

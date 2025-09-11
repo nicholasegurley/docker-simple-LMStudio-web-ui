@@ -69,16 +69,18 @@ For active development, you can run the frontend and backend separately.
 ```bash
 cd backend
 
-# Create virtual environment
+# Create virtual environment (optional but recommended)
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the server
+# Run the server (IMPORTANT: Must be run from backend directory)
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+**Critical**: The backend server must be run from the `backend` directory, not the project root. Running from the wrong directory will result in "ModuleNotFoundError: No module named 'app'" errors.
 
 #### Frontend Setup
 
@@ -252,6 +254,45 @@ npm install
 
 ### Backend Issues
 
+#### "Failed to save settings" or "Failed to refresh models" Errors
+
+These errors occur when the backend server is not running or not accessible:
+
+1. **Check if backend is running**:
+   ```bash
+   # Test the health endpoint
+   curl http://localhost:8000/api/healthz
+   ```
+
+2. **Start the backend server**:
+   ```bash
+   cd backend
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+   ```
+
+3. **Verify dependencies are installed**:
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+
+#### "ModuleNotFoundError: No module named 'app'" Error
+
+This error occurs when running uvicorn from the wrong directory:
+
+1. **Make sure you're in the backend directory**:
+   ```bash
+   cd backend  # Must be in this directory
+   uvicorn app.main:app --host 127.0.0.1 --port 8000
+   ```
+
+2. **Do NOT run from project root**:
+   ```bash
+   # WRONG - This will fail
+   cd /path/to/OpenLLMWeb
+   uvicorn app.main:app --host 127.0.0.1 --port 8000
+   ```
+
 #### Database Errors
 
 The SQLite database is stored in a Docker volume. If you encounter database issues:
@@ -359,3 +400,5 @@ If you encounter issues not covered in this guide:
 2. Review the application logs: `make logs`
 3. Test individual components (LM Studio, backend API, frontend)
 4. Create a new issue with detailed information about your setup and the problem
+
+

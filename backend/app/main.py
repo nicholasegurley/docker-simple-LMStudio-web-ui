@@ -1,33 +1,190 @@
-import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session
+from typing import List
+import asyncio
+
 from .db import init_db
-from .api import router as api_router
+from .deps import get_session
+from .models import Persona, Setting
+from .schemas import SettingOut, SettingIn, PersonaIn
+from .settings_service import get_lm_studio_base_url, set_lm_studio_base_url
+from .personas_service import (
+    list_personas,
+    create_persona,
+    update_persona,
+    delete_persona,
+    get_persona,
+)
+from .lmstudio_client import LMStudioClient
+
+app = FastAPI(title="OpenLLMWeb API", version="1.0.0")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize database
+init_db()
 
 
-def create_app() -> FastAPI:
-    app = FastAPI(title="LMStudio Web UI Backend", version="0.1.0")
-
-    origins = ["http://localhost:5173", "*"]  # LAN-friendly
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    app.include_router(api_router, prefix="/api")
-    return app
+@app.get("/api/healthz")
+async def health_check():
+    return {"status": "ok"}
 
 
-app = create_app()
+@app.get("/api/settings", response_model=SettingOut)
+async def get_settings(session: Session = Depends(get_session)):
+    """Get current settings"""
+    url = get_lm_studio_base_url(session)
+    return SettingOut(lm_studio_base_url=url)
 
 
-@app.on_event("startup")
-def on_startup():
-    init_db()
+@app.put("/api/settings")
+async def put_settings(settings: SettingIn, session: Session = Depends(get_session)):
+    """Update settings"""
+    try:
+        set_lm_studio_base_url(session, str(settings.lm_studio_base_url))
+        return {"message": "Settings updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save settings: {str(e)}")
+
+
+@app.get("/api/models")
+async def fetch_models(session: Session = Depends(get_session)):
+    """Fetch available models from LM Studio"""
+    try:
+        base_url = get_lm_studio_base_url(session)
+        client = LMStudioClient(base_url)
+        models = await client.list_models()
+        return models
+    except Exception as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Failed to fetch models from LM Studio: {str(e)}"
+        )
+
+
+@app.post("/api/models/refresh")
+async def refresh_models(session: Session = Depends(get_session)):
+    """Refresh models from LM Studio"""
+    try:
+        base_url = get_lm_studio_base_url(session)
+        client = LMStudioClient(base_url)
+        models = await client.list_models()
+        return {"message": "Models refreshed successfully", "models": models}
+    except Exception as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Failed to refresh models. Check your LM Studio URL and connection: {str(e)}"
+        )
+
+
+@app.get("/api/personas", response_model=List[Persona])
+async def list_personas_endpoint(session: Session = Depends(get_session)):
+    """List all personas"""
+    return list_personas(session)
+
+
+@app.post("/api/personas", response_model=Persona)
+async def create_persona_endpoint(
+    persona: PersonaIn, session: Session = Depends(get_session)
+):
+    """Create a new persona"""
+    try:
+        return create_persona(session, persona.name, persona.system_prompt)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create persona: {str(e)}")
+
+
+@app.put("/api/personas/{persona_id}", response_model=Persona)
+async def update_persona_endpoint(
+    persona_id: int,
+    persona: PersonaIn,
+    session: Session = Depends(get_session),
+):
+    """Update an existing persona"""
+    try:
+        updated_persona = update_persona(session, persona_id, persona.name, persona.system_prompt)
+        if not updated_persona:
+            raise HTTPException(status_code=404, detail="Persona not found")
+        return updated_persona
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update persona: {str(e)}")
+
+
+@app.delete("/api/personas/{persona_id}")
+async def delete_persona_endpoint(
+    persona_id: int, session: Session = Depends(get_session)
+):
+    """Delete a persona"""
+    try:
+        success = delete_persona(session, persona_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Persona not found")
+        return {"message": "Persona deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete persona: {str(e)}")
+
+
+@app.post("/api/chat")
+async def chat_endpoint(
+    payload: dict,
+    session: Session = Depends(get_session),
+):
+    """Send a chat message"""
+    try:
+        base_url = get_lm_studio_base_url(session)
+        client = LMStudioClient(base_url)
+        
+        # Get persona if specified
+        persona = None
+        if payload.get("persona_id"):
+            persona = get_persona(session, payload["persona_id"])
+            if not persona:
+                raise HTTPException(status_code=404, detail="Persona not found")
+        
+        # Prepare the chat payload
+        chat_payload = {
+            "model": payload["model"],
+            "messages": [
+                {"role": "system", "content": persona.system_prompt} if persona else None,
+                {"role": "user", "content": payload["prompt"]},
+            ],
+            "temperature": payload.get("temperature", 0.7),
+            "max_tokens": payload.get("max_tokens", 1000),
+        }
+        
+        # Remove None values
+        chat_payload["messages"] = [msg for msg in chat_payload["messages"] if msg is not None]
+        
+        response = await client.chat(chat_payload)
+        
+        # Extract the content from the response
+        content = ""
+        if "choices" in response and len(response["choices"]) > 0:
+            content = response["choices"][0].get("message", {}).get("content", "")
+        
+        return {"content": content, "raw": response}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process chat request: {str(e)}"
+        )
 
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

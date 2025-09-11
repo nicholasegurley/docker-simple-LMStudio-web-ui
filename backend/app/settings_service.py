@@ -19,3 +19,4 @@ def set_lm_studio_base_url(session: Session, url: str) -> None:
         row = Setting(key="lm_studio_base_url", value=url)
         session.add(row)
     session.commit()
+

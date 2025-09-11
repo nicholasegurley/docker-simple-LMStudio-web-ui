@@ -7,8 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Critical Bug**: Missing FastAPI backend application causing "Failed to save settings" and "Failed to refresh models" errors
+- **Backend Implementation**: Created complete FastAPI application with all required endpoints
+- **Server Startup**: Fixed uvicorn server startup issues when running from wrong directory
+
 ### Added
-- Initial project structure and documentation
+- Complete FastAPI backend application (`backend/app/main.py`)
+- All required API endpoints for settings, models, personas, and chat functionality
+- Missing `get_persona` function in personas service
+- Proper error handling and HTTP status codes for all endpoints
+- CORS middleware configuration for frontend-backend communication
+- Database initialization and session management
+- Comprehensive API documentation via FastAPI auto-generated docs
+
+### Technical Details
+- **Backend**: FastAPI with SQLModel, SQLite, and httpx for LM Studio integration
+- **API Endpoints**: 
+  - `GET/PUT /api/settings` - Settings management
+  - `GET/POST /api/models/refresh` - Model listing and refresh
+  - `GET/POST/PUT/DELETE /api/personas` - Persona CRUD operations
+  - `POST /api/chat` - Chat completion
+  - `GET /api/healthz` - Health check
+- **Error Handling**: Proper HTTP status codes and error messages
+- **Dependencies**: All required Python packages installed and tested
+
+### Initial project structure and documentation
 
 ## [0.1.0] - 2024-01-XX
 
@@ -117,3 +141,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ ] Security audit and hardening
 - [ ] Internationalization (i18n) support
 - [ ] Progressive Web App (PWA) features
+
+

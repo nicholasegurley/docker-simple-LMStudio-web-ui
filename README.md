@@ -123,6 +123,8 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+**Important**: The backend server must be run from the `backend` directory, not the project root.
+
 #### Frontend
 ```bash
 cd frontend
@@ -156,6 +158,17 @@ make test        # Run tests
 - `POST /api/chat` - Send chat message
 
 ## Troubleshooting
+
+### Backend Issues
+
+1. **"Failed to save settings" or "Failed to refresh models" errors**: 
+   - Ensure the backend server is running: `cd backend && python -m uvicorn app.main:app --host 127.0.0.1 --port 8000`
+   - Check that you're running the server from the `backend` directory, not the project root
+   - Verify all dependencies are installed: `pip install -r requirements.txt`
+
+2. **"ModuleNotFoundError: No module named 'app'"**:
+   - Make sure you're running uvicorn from the `backend` directory
+   - Install missing dependencies: `pip install fastapi uvicorn sqlmodel httpx pydantic`
 
 ### LM Studio Connection Issues
 
@@ -211,3 +224,5 @@ See [CHANGELOG.md](CHANGELOG.md) for a list of changes and version history.
 ---
 
 **Note**: This application is designed for LAN-only use and does not include authentication or external network access by default. For production use, consider adding appropriate security measures.
+
+
