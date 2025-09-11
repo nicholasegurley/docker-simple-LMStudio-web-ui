@@ -10,7 +10,7 @@ logs:
 	cd infrastructure && docker compose logs -f
 
 rebuild:
-	cd infrastructure && docker compose up -d --build --force-recreate
+	cd infrastructure && docker compose down && docker compose build --no-cache && docker compose up -d
 
 fmt:
 	black backend && ruff backend --fix || true
