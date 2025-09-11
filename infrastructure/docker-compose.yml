@@ -5,7 +5,7 @@ services:
     build: ../backend
     container_name: lmstudio_backend
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "${API_PORT:-8001}:8001"
     volumes:
       - dbdata:/app/data
     environment:
@@ -19,7 +19,7 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_BASE=http://backend:8000/api
+      - VITE_API_BASE=http://backend:8001/api
     ports:
       - "${WEB_PORT:-5173}:80"
     networks:
