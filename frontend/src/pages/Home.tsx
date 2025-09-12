@@ -9,6 +9,7 @@ export default function Home() {
   const [result, setResult] = useState<{ content: string; raw: any; chat_id: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [newMessage, setNewMessage] = useState<{ role: string; content: string } | undefined>(undefined)
+  const [chatHistoryRefreshTrigger, setChatHistoryRefreshTrigger] = useState(0)
 
   const handleResult = (newResult: { content: string; raw: any; chat_id: number }) => {
     setResult(newResult)
@@ -16,6 +17,8 @@ export default function Home() {
     setCurrentChatId(newResult.chat_id)
     // Set new message for the conversation component
     setNewMessage({ role: 'assistant', content: newResult.content })
+    // Trigger chat history refresh
+    setChatHistoryRefreshTrigger(prev => prev + 1)
   }
 
   const handleError = (errorMessage: string) => {
@@ -46,18 +49,19 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-full min-h-0">
+    <div className="flex min-h-[calc(100vh-4rem)]">
       {/* Chat History Panel */}
       <ChatHistoryPanel
         onChatSelect={handleChatSelect}
         onNewChat={handleNewChat}
         currentChatId={currentChatId}
+        refreshTrigger={chatHistoryRefreshTrigger}
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col">
         {/* Conversation View */}
-        <div className="flex-1 min-h-0">
+        <div className="flex-1">
           <Conversation 
             chatId={currentChatId} 
             newMessage={newMessage} 

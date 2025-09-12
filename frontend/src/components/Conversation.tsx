@@ -77,15 +77,9 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed }:
   }, [newMessage, chat, onMessageProcessed])
 
   useEffect(() => {
-    // Only auto-scroll if we're at or near the bottom of the chat
-    if (chat?.messages.length && messagesEndRef.current) {
-      const container = messagesEndRef.current.parentElement
-      if (container) {
-        const isNearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 100
-        if (isNearBottom) {
-          scrollToBottom()
-        }
-      }
+    // Auto-scroll to bottom when new messages are added
+    if (chat?.messages.length) {
+      scrollToBottom()
     }
   }, [chat?.messages.length])
 
@@ -103,7 +97,7 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed }:
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
@@ -165,7 +159,7 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed }:
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+      <div className="flex-1 p-4 space-y-4">
         {chat.messages.map((message) => (
           <div
             key={message.id}
