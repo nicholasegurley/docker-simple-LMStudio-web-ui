@@ -19,7 +19,11 @@ A modern, open-source web interface for interacting with Local LLMs via LM Studi
 
 ## Screenshots
 
-*Coming soon - placeholder for UI screenshots*
+<img width="2857" height="1601" alt="Screenshot 2025-09-11 230359" src="https://github.com/user-attachments/assets/91dfcf1f-5150-4227-9a95-5dfaa721ab77" />
+
+<img width="2856" height="1596" alt="Screenshot 2025-09-11 230445" src="https://github.com/user-attachments/assets/700aa76b-d32f-46a7-924e-a4144fbc3b41" />
+
+<img width="2859" height="1603" alt="Screenshot 2025-09-11 230653" src="https://github.com/user-attachments/assets/ecc3b5c0-5372-4066-8cac-5b6c8d6fbc19" />
 
 ## Tech Stack
 
