@@ -26,7 +26,7 @@ This is the easiest way to get started and is suitable for both development and 
 
 ```bash
 git clone <repository-url>
-cd lmstudio-web-ui
+cd docker-simple-lmstudio-web-ui
 ```
 
 #### 2. Configure Environment
@@ -36,11 +36,12 @@ cd infrastructure
 cp env.example .env
 ```
 
-Edit `.env` if you need to change default ports:
+Edit `.env` if you need to change default ports and Docker Host IP (not LM Studio):
 ```bash
 # Default values
 API_PORT=8001
 WEB_PORT=5173
+HOST_IP=192.168.4.41
 ```
 
 #### 3. Start the Application
@@ -129,7 +130,7 @@ The application is configured to be accessible across your local network:
 
 ### Accessing from Other Devices
 
-1. Find your machine's IP address:
+1. Find your Docker host machine's IP address:
    ```bash
    # Windows
    ipconfig
@@ -143,7 +144,7 @@ The application is configured to be accessible across your local network:
    http://YOUR_IP_ADDRESS:5173
    ```
 
-3. Update LM Studio URL in settings to use your machine's IP:
+3. Update LM Studio URL in settings to use your LLM server's IP:
    ```
    http://YOUR_IP_ADDRESS:1234/v1
    ```

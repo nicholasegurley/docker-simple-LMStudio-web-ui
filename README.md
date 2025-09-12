@@ -1,19 +1,21 @@
-# LMStudio Web UI
+This is an unofficial project and is not affiliated with or endorsed by LM Studio.
+
+# Dockerized Simple LMStudio Web UI (Unofficial)
 
 A modern, open-source web interface for interacting with Local LLMs via LM Studio over your local network. Built with React, TypeScript, FastAPI, and Docker.
 
 ## Features
 
-- 🚀 **Modern Web UI** - Clean, responsive interface with light/dark theme support
-- 🤖 **LM Studio Integration** - Seamless connection to your local LM Studio server
-- 👤 **Persona Management** - Create and manage custom AI personas with system prompts
-- 💬 **Chat History** - Persistent conversation management with auto-generated chat names
-- 🔄 **Context-Aware Conversations** - Configurable message context for continuing chats
-- 🔄 **Model Refresh** - Dynamically fetch available models from LM Studio
-- 📋 **Copy to Clipboard** - Easy response copying with visual feedback
-- 🐳 **Docker Ready** - One-command deployment with Docker Compose
-- 🌐 **LAN Access** - Accessible across your local network
-- ⚡ **Fast & Lightweight** - Built with modern web technologies
+- **Modern Web UI** - Clean, responsive interface with light/dark theme support
+- **LM Studio Integration** - Seamless connection to your local LM Studio server
+- **Persona Management** - Create and manage custom AI personas with system prompts
+- **Chat History** - Persistent conversation management with auto-generated chat names
+- **Context-Aware Conversations** - Configurable message context for continuing chats
+- **Model Refresh** - Dynamically fetch available models from LM Studio
+- **Copy to Clipboard** - Easy response copying with visual feedback
+- **Docker Ready** - One-command deployment with Docker Compose
+- **LAN Access** - Accessible across your local network
+- **Fast & Lightweight** - Built with modern web technologies
 
 ## Screenshots
 
@@ -51,7 +53,7 @@ A modern, open-source web interface for interacting with Local LLMs via LM Studi
 
 ```bash
 git clone <repository-url>
-cd lmstudio-web-ui
+cd docker-simple-LMStudio-web-ui
 cd infrastructure
 cp env.example .env
 ```

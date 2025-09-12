@@ -8,20 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Future features and improvements
+
+## [1.0.0] - 2025-09-11
+
+### Added
 - **Chat History System**: Complete persistent chat management with SQLite storage
   - Left-side chat history panel with auto-generated chat names
   - Click to load previous conversations
   - Delete individual chats with confirmation
   - Persistent storage across app restarts
+  - Auto-refresh chat list when new chats are created
 - **Context-Aware Conversations**: Configurable message context for continuing chats
   - Settings option to configure number of previous messages (0-20)
   - Default context of 5 previous messages
   - System messages always included first in conversation flow
 - **Enhanced Chat Interface**: Modern conversation view with message bubbles
   - User and assistant message differentiation
-  - Timestamps for all messages
-  - Auto-scroll to latest messages
+  - Timestamps for all messages with proper timezone handling
+  - Page-level scrolling for better user experience
   - Real-time message updates
+  - Copy-to-clipboard functionality for LLM responses
 - **Improved Persona Integration**: System messages now properly prioritized
   - Persona system messages always sent first in conversation
   - Context messages included after system message
@@ -35,8 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Settings Enhancement**: Added context message count configuration
 
 ### Fixed
+- **Chat History Auto-Refresh**: New chats now automatically appear in the sidebar without requiring page refresh
+- **Scrolling Issues**: Fixed page scrolling problems by switching to page-level scrolling instead of container scrolling
+- **Duplicate Messages**: Resolved duplicate message display and timezone inconsistencies
 - **Persona System Message Priority**: System messages now always included as first part of message payload
-- **Copy to Clipboard**: Verified and confirmed working in both light and dark themes
+- **Copy to Clipboard**: Verified and confirmed working in both light and dark themes with visual feedback
 - **Chat Persistence**: All conversations now properly saved and retrievable
 - **Message Context**: Previous conversation context properly included in LLM requests
 - **UI Layout**: New sidebar layout with proper responsive design
@@ -69,7 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Initial project structure and documentation
 
-## [0.1.0] - 2024-01-XX
+## [0.1.0] - 2025-09-01
 
 ### Added
 - Initial release of LMStudio Web UI
@@ -150,6 +160,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.0.0**: Major release with complete chat management system, improved UI/UX, and bug fixes
 - **0.1.0**: Initial release with core functionality
 - **Unreleased**: Future features and improvements
 
