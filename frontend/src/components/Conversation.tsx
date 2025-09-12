@@ -20,9 +20,10 @@ interface Chat {
 interface ConversationProps {
   chatId?: number
   newMessage?: { role: string; content: string }
+  onMessageProcessed?: () => void
 }
 
-export default function Conversation({ chatId, newMessage }: ConversationProps) {
+export default function Conversation({ chatId, newMessage, onMessageProcessed }: ConversationProps) {
   const [chat, setChat] = useState<Chat | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -37,17 +38,40 @@ export default function Conversation({ chatId, newMessage }: ConversationProps) 
 
   useEffect(() => {
     if (newMessage && chat) {
-      // Add the new message to the current chat
-      setChat(prev => prev ? {
-        ...prev,
-        messages: [...prev.messages, newMessage as ChatMessage]
-      } : null)
+      // Check if this message is already in the chat to prevent duplicates
+      const messageExists = chat.messages.some(msg => 
+        msg.content === newMessage.content && 
+        msg.role === newMessage.role &&
+        Math.abs(new Date(msg.created_at).getTime() - Date.now()) < 5000 // Within 5 seconds
+      )
+      
+      if (!messageExists) {
+        // Add the new message to the current chat with a temporary ID and current timestamp
+        const tempMessage: ChatMessage = {
+          id: Date.now(), // Temporary ID
+          role: newMessage.role,
+          content: newMessage.content,
+          created_at: new Date().toISOString()
+        }
+        
+        setChat(prev => prev ? {
+          ...prev,
+          messages: [...prev.messages, tempMessage]
+        } : null)
+        
+        // Notify parent that message has been processed
+        if (onMessageProcessed) {
+          onMessageProcessed()
+        }
+      }
     }
-  }, [newMessage, chat])
+  }, [newMessage, chat, onMessageProcessed])
 
   useEffect(() => {
-    scrollToBottom()
-  }, [chat?.messages])
+    if (chat?.messages.length) {
+      scrollToBottom()
+    }
+  }, [chat?.messages.length])
 
   const loadChat = async (id: number) => {
     try {
@@ -66,10 +90,18 @@ export default function Conversation({ chatId, newMessage }: ConversationProps) 
   }
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) {
+        return 'Just now'
+      }
+      return date.toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+    } catch (error) {
+      return 'Just now'
+    }
   }
 
   if (isLoading) {
@@ -105,7 +137,7 @@ export default function Conversation({ chatId, newMessage }: ConversationProps) 
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {chat.messages.map((message) => (
           <div
             key={message.id}

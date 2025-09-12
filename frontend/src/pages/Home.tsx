@@ -41,6 +41,10 @@ export default function Home() {
     setNewMessage({ role: 'user', content: message })
   }
 
+  const handleMessageProcessed = () => {
+    setNewMessage(undefined)
+  }
+
   return (
     <div className="flex h-full">
       {/* Chat History Panel */}
@@ -54,7 +58,11 @@ export default function Home() {
       <div className="flex-1 flex flex-col">
         {/* Conversation View */}
         <div className="flex-1">
-          <Conversation chatId={currentChatId} newMessage={newMessage} />
+          <Conversation 
+            chatId={currentChatId} 
+            newMessage={newMessage} 
+            onMessageProcessed={handleMessageProcessed}
+          />
         </div>
 
         {/* Query Form */}
