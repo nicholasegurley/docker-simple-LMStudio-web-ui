@@ -46,7 +46,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full min-h-0">
       {/* Chat History Panel */}
       <ChatHistoryPanel
         onChatSelect={handleChatSelect}
@@ -55,9 +55,9 @@ export default function Home() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Conversation View */}
-        <div className="flex-1">
+        <div className="flex-1 min-h-0">
           <Conversation 
             chatId={currentChatId} 
             newMessage={newMessage} 

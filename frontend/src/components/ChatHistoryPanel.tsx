@@ -62,11 +62,22 @@ export default function ChatHistoryPanel({ onChatSelect, onNewChat, currentChatI
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     
     if (diffInHours < 24) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      return date.toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      })
     } else if (diffInHours < 24 * 7) {
-      return date.toLocaleDateString([], { weekday: 'short' })
+      return date.toLocaleDateString([], { 
+        weekday: 'short',
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      })
     } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+      return date.toLocaleDateString([], { 
+        month: 'short', 
+        day: 'numeric',
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      })
     }
   }
 

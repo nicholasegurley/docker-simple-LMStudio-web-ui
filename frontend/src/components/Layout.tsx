@@ -19,7 +19,7 @@ export default function Layout({ children, isDark, onToggleTheme, showSidebar, s
             {sidebarContent}
           </div>
         )}
-        <main className={`flex-1 ${showSidebar ? 'overflow-hidden' : 'container mx-auto px-4 py-8'}`}>
+        <main className={`flex-1 ${showSidebar ? 'flex flex-col min-h-0' : 'container mx-auto px-4 py-8'}`}>
           {children}
         </main>
       </div>

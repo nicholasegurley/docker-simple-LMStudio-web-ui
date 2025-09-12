@@ -38,38 +38,54 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed }:
 
   useEffect(() => {
     if (newMessage && chat) {
-      // Check if this message is already in the chat to prevent duplicates
-      const messageExists = chat.messages.some(msg => 
-        msg.content === newMessage.content && 
-        msg.role === newMessage.role &&
-        Math.abs(new Date(msg.created_at).getTime() - Date.now()) < 5000 // Within 5 seconds
-      )
+      // For user messages, we'll add them temporarily to show immediate feedback
+      // For assistant messages, we'll reload the chat to get the proper server data
+      if (newMessage.role === 'user') {
+        // Check if this message is already in the chat to prevent duplicates
+        const messageExists = chat.messages.some(msg => 
+          msg.content === newMessage.content && 
+          msg.role === newMessage.role &&
+          Math.abs(new Date(msg.created_at).getTime() - Date.now()) < 5000 // Within 5 seconds
+        )
+        
+        if (!messageExists) {
+          // Add the new user message to the current chat with a temporary ID and current timestamp
+          const tempMessage: ChatMessage = {
+            id: Date.now(), // Temporary ID
+            role: newMessage.role,
+            content: newMessage.content,
+            created_at: new Date().toISOString()
+          }
+          
+          setChat(prev => prev ? {
+            ...prev,
+            messages: [...prev.messages, tempMessage]
+          } : null)
+        }
+      } else if (newMessage.role === 'assistant') {
+        // For assistant messages, reload the chat to get the proper server data
+        if (chat.id) {
+          loadChat(chat.id)
+        }
+      }
       
-      if (!messageExists) {
-        // Add the new message to the current chat with a temporary ID and current timestamp
-        const tempMessage: ChatMessage = {
-          id: Date.now(), // Temporary ID
-          role: newMessage.role,
-          content: newMessage.content,
-          created_at: new Date().toISOString()
-        }
-        
-        setChat(prev => prev ? {
-          ...prev,
-          messages: [...prev.messages, tempMessage]
-        } : null)
-        
-        // Notify parent that message has been processed
-        if (onMessageProcessed) {
-          onMessageProcessed()
-        }
+      // Notify parent that message has been processed
+      if (onMessageProcessed) {
+        onMessageProcessed()
       }
     }
   }, [newMessage, chat, onMessageProcessed])
 
   useEffect(() => {
-    if (chat?.messages.length) {
-      scrollToBottom()
+    // Only auto-scroll if we're at or near the bottom of the chat
+    if (chat?.messages.length && messagesEndRef.current) {
+      const container = messagesEndRef.current.parentElement
+      if (container) {
+        const isNearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 100
+        if (isNearBottom) {
+          scrollToBottom()
+        }
+      }
     }
   }, [chat?.messages.length])
 
@@ -86,7 +102,9 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed }:
   }
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
   }
 
   const formatTime = (dateString: string) => {
@@ -95,9 +113,19 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed }:
       if (isNaN(date.getTime())) {
         return 'Just now'
       }
+      
+      // Check if the date is very recent (within last minute)
+      const now = new Date()
+      const diffInSeconds = (now.getTime() - date.getTime()) / 1000
+      
+      if (diffInSeconds < 60) {
+        return 'Just now'
+      }
+      
       return date.toLocaleTimeString([], { 
         hour: '2-digit', 
-        minute: '2-digit' 
+        minute: '2-digit',
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
       })
     } catch (error) {
       return 'Just now'
