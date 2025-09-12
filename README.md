@@ -271,11 +271,16 @@ See [CHANGELOG.md](CHANGELOG.md) for a list of changes and version history.
 ## Support
 
 - **Issues**: Report bugs and request features on GitHub Issues
-- **Discussions**: Join community discussions on GitHub Discussions
 - **Documentation**: Check the [SETUP.md](SETUP.md) for detailed setup instructions
 
----
+## Security Note 
 
-**Note**: This application is designed for LAN-only use and does not include authentication or external network access by default. For production use, consider adding appropriate security measures.
+This application is designed for LAN-only use and does not include authentication or external network access by default. For production use, consider adding appropriate security measures.
 
+## Disclaimer
 
+This project is provided "as is" and "as available", without warranty of any kind, express or implied.
+
+Use of this software is at your own risk. The author(s) are not responsible for any damages, data loss, or issues that may arise from using, modifying, or distributing this code.
+
+By using this repository, you agree that you assume all responsibility for any outcomes that result from its use.
