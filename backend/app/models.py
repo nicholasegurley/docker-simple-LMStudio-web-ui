@@ -1,7 +1,10 @@
 from __future__ import annotations
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Column, JSON, Relationship
+
+if TYPE_CHECKING:
+    pass
 
 
 class Persona(SQLModel, table=True):
@@ -23,7 +26,6 @@ class Chat(SQLModel, table=True):
     name: str = Field(index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    messages: List["ChatMessage"] = Relationship(back_populates="chat")
 
 
 class ChatMessage(SQLModel, table=True):
@@ -32,5 +34,4 @@ class ChatMessage(SQLModel, table=True):
     role: str = Field(index=True)  # 'system', 'user', 'assistant'
     content: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    chat: Optional[Chat] = Relationship(back_populates="messages")
 
