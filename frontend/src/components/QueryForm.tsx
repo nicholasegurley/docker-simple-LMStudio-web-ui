@@ -16,11 +16,13 @@ interface Persona {
 }
 
 interface QueryFormProps {
-  onResult: (result: { content: string; raw: any }) => void
+  onResult: (result: { content: string; raw: any; chat_id: number }) => void
   onError: (error: string) => void
+  currentChatId?: number
+  onUserMessage?: (message: string) => void
 }
 
-export default function QueryForm({ onResult, onError }: QueryFormProps) {
+export default function QueryForm({ onResult, onError, currentChatId, onUserMessage }: QueryFormProps) {
   const [models, setModels] = useState<Model[]>([])
   const [personas, setPersonas] = useState<Persona[]>([])
   const [selectedModel, setSelectedModel] = useState('')
@@ -61,13 +63,20 @@ export default function QueryForm({ onResult, onError }: QueryFormProps) {
     if (!selectedModel || !prompt.trim()) return
 
     setIsLoading(true)
+    const userMessage = prompt.trim()
     try {
+      // Notify parent about user message for conversation display
+      if (onUserMessage) {
+        onUserMessage(userMessage)
+      }
+      
       const result = await chat({
         model: selectedModel,
         persona_id: selectedPersona || undefined,
-        prompt: prompt.trim(),
+        prompt: userMessage,
         temperature: 0.7,
-        max_tokens: 512
+        max_tokens: 512,
+        chat_id: currentChatId
       })
       onResult(result)
       setPrompt('')

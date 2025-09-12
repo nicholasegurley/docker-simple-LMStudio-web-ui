@@ -28,7 +28,7 @@ function App() {
   }
 
   return (
-    <Layout isDark={isDark} onToggleTheme={toggleTheme}>
+    <Layout isDark={isDark} onToggleTheme={toggleTheme} showSidebar={true}>
       <Home />
     </Layout>
   )

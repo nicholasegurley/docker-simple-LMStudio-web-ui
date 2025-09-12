@@ -7,15 +7,25 @@ import logging
 
 from app.db import init_db
 from app.deps import get_session
-from app.models import Persona, Setting
-from app.schemas import SettingOut, SettingIn, PersonaIn
-from app.settings_service import get_lm_studio_base_url, set_lm_studio_base_url
+from app.models import Persona, Setting, Chat, ChatMessage
+from app.schemas import SettingOut, SettingIn, PersonaIn, ChatOut, ChatResponseOut, ChatIn
+from app.settings_service import get_lm_studio_base_url, set_lm_studio_base_url, get_context_message_count, set_context_message_count
 from app.personas_service import (
     list_personas,
     create_persona,
     update_persona,
     delete_persona,
     get_persona,
+)
+from app.chat_service import (
+    create_chat,
+    get_chat,
+    list_chats,
+    delete_chat,
+    add_message,
+    get_chat_messages,
+    get_recent_messages_for_context,
+    generate_chat_name_from_prompt,
 )
 from app.lmstudio_client import LMStudioClient
 
@@ -55,7 +65,8 @@ async def health_check():
 async def get_settings(session: Session = Depends(get_session)):
     """Get current settings"""
     url = get_lm_studio_base_url(session)
-    return SettingOut(lm_studio_base_url=url)
+    context_count = get_context_message_count(session)
+    return SettingOut(lm_studio_base_url=url, context_message_count=context_count)
 
 
 @app.put("/api/settings")
@@ -64,6 +75,11 @@ async def put_settings(settings: SettingIn, session: Session = Depends(get_sessi
     try:
         logger.info(f"Updating settings with URL: {settings.lm_studio_base_url}")
         set_lm_studio_base_url(session, str(settings.lm_studio_base_url))
+        
+        if settings.context_message_count is not None:
+            logger.info(f"Updating context message count: {settings.context_message_count}")
+            set_context_message_count(session, settings.context_message_count)
+        
         logger.info("Settings updated successfully")
         return {"message": "Settings updated successfully"}
     except Exception as e:
@@ -159,9 +175,9 @@ async def delete_persona_endpoint(
         raise HTTPException(status_code=500, detail=f"Failed to delete persona: {str(e)}")
 
 
-@app.post("/api/chat")
+@app.post("/api/chat", response_model=ChatResponseOut)
 async def chat_endpoint(
-    payload: dict,
+    payload: ChatIn,
     session: Session = Depends(get_session),
 ):
     """Send a chat message"""
@@ -171,24 +187,48 @@ async def chat_endpoint(
         
         # Get persona if specified
         persona = None
-        if payload.get("persona_id"):
-            persona = get_persona(session, payload["persona_id"])
+        if payload.persona_id:
+            persona = get_persona(session, payload.persona_id)
             if not persona:
                 raise HTTPException(status_code=404, detail="Persona not found")
         
-        # Prepare the chat payload
-        chat_payload = {
-            "model": payload["model"],
-            "messages": [
-                {"role": "system", "content": persona.system_prompt} if persona else None,
-                {"role": "user", "content": payload["prompt"]},
-            ],
-            "temperature": payload.get("temperature", 0.7),
-            "max_tokens": payload.get("max_tokens", 1000),
-        }
+        # Handle chat creation or retrieval
+        chat = None
+        if payload.chat_id:
+            chat = get_chat(session, payload.chat_id)
+            if not chat:
+                raise HTTPException(status_code=404, detail="Chat not found")
+        else:
+            # Create new chat
+            chat_name = generate_chat_name_from_prompt(payload.prompt)
+            chat = create_chat(session, chat_name)
         
-        # Remove None values
-        chat_payload["messages"] = [msg for msg in chat_payload["messages"] if msg is not None]
+        # Get context messages if continuing an existing chat
+        context_count = get_context_message_count(session)
+        context_messages = []
+        if payload.chat_id and context_count > 0:
+            context_messages = get_recent_messages_for_context(session, chat.id, context_count)
+        
+        # Prepare the chat payload with system message first
+        messages = []
+        
+        # Always include system message first if persona is specified
+        if persona:
+            messages.append({"role": "system", "content": persona.system_prompt})
+        
+        # Add context messages (user and assistant turns)
+        for msg in context_messages:
+            messages.append({"role": msg.role, "content": msg.content})
+        
+        # Add current user message
+        messages.append({"role": "user", "content": payload.prompt})
+        
+        chat_payload = {
+            "model": payload.model,
+            "messages": messages,
+            "temperature": payload.temperature,
+            "max_tokens": payload.max_tokens,
+        }
         
         response = await client.chat(chat_payload)
         
@@ -197,7 +237,11 @@ async def chat_endpoint(
         if "choices" in response and len(response["choices"]) > 0:
             content = response["choices"][0].get("message", {}).get("content", "")
         
-        return {"content": content, "raw": response}
+        # Save messages to database
+        add_message(session, chat.id, "user", payload.prompt)
+        add_message(session, chat.id, "assistant", content)
+        
+        return ChatResponseOut(content=content, raw=response, chat_id=chat.id)
         
     except HTTPException:
         raise
@@ -206,6 +250,51 @@ async def chat_endpoint(
             status_code=500,
             detail=f"Failed to process chat request: {str(e)}"
         )
+
+
+@app.get("/api/chats", response_model=List[ChatOut])
+async def list_chats_endpoint(session: Session = Depends(get_session)):
+    """List all chats"""
+    try:
+        chats = list_chats(session)
+        return chats
+    except Exception as e:
+        logger.error(f"Failed to list chats: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to list chats: {str(e)}")
+
+
+@app.get("/api/chats/{chat_id}", response_model=ChatOut)
+async def get_chat_endpoint(chat_id: int, session: Session = Depends(get_session)):
+    """Get a specific chat with its messages"""
+    try:
+        chat = get_chat(session, chat_id)
+        if not chat:
+            raise HTTPException(status_code=404, detail="Chat not found")
+        
+        # Get all messages for this chat
+        messages = get_chat_messages(session, chat_id)
+        chat.messages = messages
+        return chat
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get chat: {str(e)}")
+
+
+@app.delete("/api/chats/{chat_id}")
+async def delete_chat_endpoint(chat_id: int, session: Session = Depends(get_session)):
+    """Delete a chat"""
+    try:
+        success = delete_chat(session, chat_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Chat not found")
+        return {"message": "Chat deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete chat: {str(e)}")
 
 
 if __name__ == "__main__":

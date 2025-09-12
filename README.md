@@ -7,6 +7,8 @@ A modern, open-source web interface for interacting with Local LLMs via LM Studi
 - 🚀 **Modern Web UI** - Clean, responsive interface with light/dark theme support
 - 🤖 **LM Studio Integration** - Seamless connection to your local LM Studio server
 - 👤 **Persona Management** - Create and manage custom AI personas with system prompts
+- 💬 **Chat History** - Persistent conversation management with auto-generated chat names
+- 🔄 **Context-Aware Conversations** - Configurable message context for continuing chats
 - 🔄 **Model Refresh** - Dynamically fetch available models from LM Studio
 - 📋 **Copy to Clipboard** - Easy response copying with visual feedback
 - 🐳 **Docker Ready** - One-command deployment with Docker Compose
@@ -86,12 +88,34 @@ The application defaults to `http://192.168.4.70:1234/v1` if no custom URL is se
 
 ## Usage
 
-### Basic Chat
+### Chat Interface
 
-1. Select a model from the dropdown
-2. Optionally choose a persona
-3. Type your message and click "Send"
-4. Copy responses using the clipboard icon
+The interface now features a modern chat layout with:
+
+- **Left Sidebar**: Chat history panel showing all your conversations
+- **Main Area**: Current conversation with message bubbles
+- **Input Area**: Message input at the bottom
+
+### Starting a New Chat
+
+1. Click the "+" button in the chat history panel
+2. Select a model from the dropdown
+3. Optionally choose a persona
+4. Type your message and click "Send"
+5. The chat will be automatically saved with an auto-generated name
+
+### Continuing Existing Chats
+
+1. Click on any chat in the left sidebar to load it
+2. The conversation history will be displayed
+3. Continue typing - previous context will be included automatically
+4. Configure context length in Settings (default: 5 previous messages)
+
+### Chat Management
+
+- **Auto-Generated Names**: Chats are named based on your first message
+- **Delete Chats**: Click the trash icon next to any chat to delete it
+- **Persistent Storage**: All conversations are saved and survive app restarts
 
 ### Persona Management
 
@@ -99,6 +123,18 @@ The application defaults to `http://192.168.4.70:1234/v1` if no custom URL is se
 2. Scroll to "Persona Manager"
 3. Click "Add Persona" to create custom AI personalities
 4. Edit or delete existing personas as needed
+5. **System Message Priority**: Persona system messages are always sent first
+
+### Context Configuration
+
+1. Open Settings (⚙️ icon)
+2. Set "Number of Previous Messages to Send as Context" (0-20)
+3. Default is 5 messages for optimal performance
+4. Set to 0 to disable context (each message is independent)
+
+### Copy Responses
+
+Click the copy icon next to any response to copy it to your clipboard. Works in both light and dark themes.
 
 ### Theme Toggle
 
@@ -146,16 +182,26 @@ make test        # Run tests
 
 ## API Endpoints
 
+### Core Endpoints
 - `GET /api/healthz` - Health check
-- `GET /api/settings` - Get current settings
-- `PUT /api/settings` - Update settings
+- `GET /api/settings` - Get current settings (includes context message count)
+- `PUT /api/settings` - Update settings (LM Studio URL and context count)
+
+### Model Management
 - `GET /api/models` - List available models
 - `POST /api/models/refresh` - Refresh model list
+
+### Persona Management
 - `GET /api/personas` - List personas
 - `POST /api/personas` - Create persona
 - `PUT /api/personas/{id}` - Update persona
 - `DELETE /api/personas/{id}` - Delete persona
-- `POST /api/chat` - Send chat message
+
+### Chat Management
+- `GET /api/chats` - List all chats
+- `GET /api/chats/{id}` - Get specific chat with messages
+- `DELETE /api/chats/{id}` - Delete chat and all messages
+- `POST /api/chat` - Send chat message (supports chat_id for continuing conversations)
 
 ## Troubleshooting
 

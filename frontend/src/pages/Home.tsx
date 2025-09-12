@@ -1,14 +1,21 @@
 import { useState } from 'react'
 import QueryForm from '../components/QueryForm'
 import ResultCard from '../components/ResultCard'
+import ChatHistoryPanel from '../components/ChatHistoryPanel'
+import Conversation from '../components/Conversation'
 
 export default function Home() {
-  const [result, setResult] = useState<{ content: string; raw: any } | null>(null)
+  const [currentChatId, setCurrentChatId] = useState<number | undefined>(undefined)
+  const [result, setResult] = useState<{ content: string; raw: any; chat_id: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [newMessage, setNewMessage] = useState<{ role: string; content: string } | undefined>(undefined)
 
-  const handleResult = (newResult: { content: string; raw: any }) => {
+  const handleResult = (newResult: { content: string; raw: any; chat_id: number }) => {
     setResult(newResult)
     setError(null)
+    setCurrentChatId(newResult.chat_id)
+    // Set new message for the conversation component
+    setNewMessage({ role: 'assistant', content: newResult.content })
   }
 
   const handleError = (errorMessage: string) => {
@@ -16,29 +23,63 @@ export default function Home() {
     setResult(null)
   }
 
+  const handleChatSelect = (chatId: number) => {
+    setCurrentChatId(chatId)
+    setResult(null)
+    setError(null)
+    setNewMessage(undefined)
+  }
+
+  const handleNewChat = () => {
+    setCurrentChatId(undefined)
+    setResult(null)
+    setError(null)
+    setNewMessage(undefined)
+  }
+
+  const handleNewUserMessage = (message: string) => {
+    setNewMessage({ role: 'user', content: message })
+  }
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          LMStudio Web UI
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Chat with your local LLM models through LM Studio
-        </p>
-      </div>
+    <div className="flex h-full">
+      {/* Chat History Panel */}
+      <ChatHistoryPanel
+        onChatSelect={handleChatSelect}
+        onNewChat={handleNewChat}
+        currentChatId={currentChatId}
+      />
 
-      <QueryForm onResult={handleResult} onError={handleError} />
-
-      {error && (
-        <div className="card p-6 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
-          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-            Error
-          </h3>
-          <p className="text-red-700 dark:text-red-300">{error}</p>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Conversation View */}
+        <div className="flex-1">
+          <Conversation chatId={currentChatId} newMessage={newMessage} />
         </div>
-      )}
 
-      {result && <ResultCard content={result.content} raw={result.raw} />}
+        {/* Query Form */}
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+          <QueryForm
+            onResult={handleResult}
+            onError={handleError}
+            currentChatId={currentChatId}
+            onUserMessage={handleNewUserMessage}
+          />
+        </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="border-t border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
+            <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+              Error
+            </h3>
+            <p className="text-red-700 dark:text-red-300">{error}</p>
+          </div>
+        )}
+
+        {/* Result Display (for new chats) */}
+        {result && !currentChatId && <ResultCard content={result.content} raw={result.raw} />}
+      </div>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
-from sqlmodel import SQLModel, Field, Column, JSON
+from sqlmodel import SQLModel, Field, Column, JSON, Relationship
 
 
 class Persona(SQLModel, table=True):
@@ -16,4 +16,21 @@ class Setting(SQLModel, table=True):
     key: str = Field(primary_key=True)
     value: str
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class Chat(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    messages: List["ChatMessage"] = Relationship(back_populates="chat")
+
+
+class ChatMessage(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    chat_id: int = Field(foreign_key="chat.id")
+    role: str = Field(index=True)  # 'system', 'user', 'assistant'
+    content: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    chat: Optional[Chat] = Relationship(back_populates="messages")
 

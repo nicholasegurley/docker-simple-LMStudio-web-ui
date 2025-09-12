@@ -109,8 +109,9 @@ Launch LM Studio and ensure it's running with the OpenAI-compatible API enabled.
 3. Set the LM Studio Base URL:
    - **Local**: `http://127.0.0.1:1234/v1`
    - **LAN**: `http://192.168.4.70:1234/v1` (default, replace with your LM Studio machine's IP)
-4. Click "Refresh Models" to load available models
-5. Save your settings
+4. Configure context message count (default: 5, range: 0-20)
+5. Click "Refresh Models" to load available models
+6. Save your settings
 
 ### 3. Load Models in LM Studio
 
@@ -146,6 +147,35 @@ The application is configured to be accessible across your local network:
    ```
    http://YOUR_IP_ADDRESS:1234/v1
    ```
+
+## New Features Overview
+
+### Chat History System
+
+The application now includes a complete chat management system:
+
+- **Persistent Storage**: All conversations are saved in SQLite database
+- **Auto-Generated Names**: Chats are named based on your first message
+- **Context Awareness**: Previous messages are included as context (configurable)
+- **Chat Management**: Delete individual chats or start new ones
+- **Modern UI**: Message bubbles with timestamps and user/assistant differentiation
+
+### Context Configuration
+
+Configure how many previous messages to include as context:
+
+- **Default**: 5 previous messages
+- **Range**: 0-20 messages
+- **Setting**: Available in Settings modal
+- **Purpose**: Helps LLM maintain conversation context
+
+### System Message Priority
+
+Persona system messages are now properly prioritized:
+
+- **Always First**: System messages sent before any conversation context
+- **Proper Order**: System → Context → New User Message
+- **Optimal Performance**: Ensures LLM receives instructions first
 
 ## Common Commands
 
@@ -353,7 +383,7 @@ Consider adding:
 ### Database Backup
 
 ```bash
-# Backup the SQLite database
+# Backup the SQLite database (includes chat history)
 docker cp lmstudio_backend:/app/data/app.db ./backup.db
 ```
 
@@ -368,6 +398,21 @@ docker cp ./backup.db lmstudio_backend:/app/data/app.db
 
 # Start the application
 docker compose up -d
+```
+
+### Chat Data Management
+
+The database now includes:
+- **Chats table**: Chat metadata (name, timestamps)
+- **ChatMessages table**: Individual messages with roles and content
+- **Personas table**: Custom AI personas
+- **Settings table**: Application settings including context count
+
+To reset all chat history:
+```bash
+# Stop application and remove volume
+docker compose down -v
+docker compose up -d --build
 ```
 
 ## Updates and Maintenance

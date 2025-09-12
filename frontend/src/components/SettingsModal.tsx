@@ -9,6 +9,7 @@ interface SettingsModalProps {
 
 export default function SettingsModal({ onClose }: SettingsModalProps) {
   const [lmStudioUrl, setLmStudioUrl] = useState('')
+  const [contextMessageCount, setContextMessageCount] = useState(5)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -20,6 +21,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     try {
       const settings = await getSettings()
       setLmStudioUrl(settings.lm_studio_base_url)
+      setContextMessageCount(settings.context_message_count || 5)
     } catch (error) {
       console.error('Failed to load settings:', error)
     }
@@ -28,7 +30,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      await putSettings(lmStudioUrl)
+      await putSettings(lmStudioUrl, contextMessageCount)
       onClose()
     } catch (error) {
       console.error('Failed to save settings:', error)
@@ -82,6 +84,24 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               />
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 The URL where your LM Studio server is running
+              </p>
+            </div>
+
+            {/* Context Message Count */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Number of Previous Messages to Send as Context
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="20"
+                value={contextMessageCount}
+                onChange={(e) => setContextMessageCount(parseInt(e.target.value) || 0)}
+                className="input"
+              />
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                How many previous messages to include as context when continuing a chat (0-20)
               </p>
             </div>
 

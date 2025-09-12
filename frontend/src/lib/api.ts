@@ -46,8 +46,8 @@ export async function getSettings() {
   return (await api.get("/settings")).data;
 }
 
-export async function putSettings(lm_studio_base_url: string) {
-  return (await api.put("/settings", { lm_studio_base_url })).data;
+export async function putSettings(lm_studio_base_url: string, context_message_count?: number) {
+  return (await api.put("/settings", { lm_studio_base_url, context_message_count })).data;
 }
 
 // models
@@ -83,8 +83,22 @@ export async function chat(payload: {
   prompt: string;
   temperature?: number;
   max_tokens?: number;
+  chat_id?: number;
 }) {
-  return (await api.post("/chat", payload)).data as { content: string; raw: any };
+  return (await api.post("/chat", payload)).data as { content: string; raw: any; chat_id: number };
+}
+
+// chats
+export async function listChats() {
+  return (await api.get("/chats")).data;
+}
+
+export async function getChat(chatId: number) {
+  return (await api.get(`/chats/${chatId}`)).data;
+}
+
+export async function deleteChat(chatId: number) {
+  return (await api.delete(`/chats/${chatId}`)).data;
 }
 
 
