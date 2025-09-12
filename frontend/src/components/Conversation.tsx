@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { User, Bot } from 'lucide-react'
+import { User, Bot, Copy, Check } from 'lucide-react'
 import { getChat } from '../lib/api'
 
 interface ChatMessage {
@@ -26,6 +26,7 @@ interface ConversationProps {
 export default function Conversation({ chatId, newMessage, onMessageProcessed }: ConversationProps) {
   const [chat, setChat] = useState<Chat | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -98,6 +99,30 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed }:
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const copyToClipboard = async (content: string, messageId: number) => {
+    try {
+      await navigator.clipboard.writeText(content)
+      setCopiedMessageId(messageId)
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setCopiedMessageId(null)
+      }, 2000)
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error)
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = content
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopiedMessageId(messageId)
+      setTimeout(() => {
+        setCopiedMessageId(null)
+      }, 2000)
     }
   }
 
@@ -197,13 +222,28 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed }:
                   {message.content}
                 </div>
                 <div
-                  className={`text-xs mt-1 ${
+                  className={`flex items-center justify-between mt-1 ${
                     message.role === 'user'
                       ? 'text-blue-100'
                       : 'text-gray-500 dark:text-gray-400'
                   }`}
                 >
-                  {formatTime(message.created_at)}
+                  <span className="text-xs">
+                    {formatTime(message.created_at)}
+                  </span>
+                  {message.role === 'assistant' && (
+                    <button
+                      onClick={() => copyToClipboard(message.content, message.id)}
+                      className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                      title="Copy to clipboard"
+                    >
+                      {copiedMessageId === message.id ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
