@@ -257,7 +257,17 @@ async def list_chats_endpoint(session: Session = Depends(get_session)):
     """List all chats"""
     try:
         chats = list_chats(session)
-        return chats
+        # Convert chats to ChatOut format
+        chat_outs = []
+        for chat in chats:
+            chat_outs.append({
+                "id": chat.id,
+                "name": chat.name,
+                "created_at": chat.created_at,
+                "updated_at": chat.updated_at,
+                "messages": []  # Don't load messages for list view
+            })
+        return chat_outs
     except Exception as e:
         logger.error(f"Failed to list chats: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to list chats: {str(e)}")
@@ -273,8 +283,25 @@ async def get_chat_endpoint(chat_id: int, session: Session = Depends(get_session
         
         # Get all messages for this chat
         messages = get_chat_messages(session, chat_id)
-        chat.messages = messages
-        return chat
+        
+        # Convert messages to ChatMessageOut format
+        message_outs = []
+        for msg in messages:
+            message_outs.append({
+                "id": msg.id,
+                "role": msg.role,
+                "content": msg.content,
+                "created_at": msg.created_at
+            })
+        
+        # Return chat data with messages
+        return {
+            "id": chat.id,
+            "name": chat.name,
+            "created_at": chat.created_at,
+            "updated_at": chat.updated_at,
+            "messages": message_outs
+        }
     except HTTPException:
         raise
     except Exception as e:
