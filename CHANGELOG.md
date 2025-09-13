@@ -82,7 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-09-01
 
 ### Added
-- Initial release of LMStudio Web UI
+- Initial release of Dockerized Simple LMStudio Web UI (Unofficial)
 - Modern React frontend with TypeScript and Tailwind CSS
 - FastAPI backend with SQLModel and SQLite
 - Docker containerization with Docker Compose

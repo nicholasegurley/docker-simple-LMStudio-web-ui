@@ -164,7 +164,7 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed }:
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center text-gray-500 dark:text-gray-400">
           <Bot className="h-16 w-16 mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-medium mb-2">Welcome to LM Studio Web UI</h3>
+          <h3 className="text-lg font-medium mb-2">Chat with your local LLM</h3>
           <p>Start a new conversation or select an existing chat from the sidebar.</p>
         </div>
       </div>

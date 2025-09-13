@@ -1,6 +1,6 @@
 # Setup Guide
 
-This guide provides detailed instructions for setting up and running the LMStudio Web UI project.
+This guide provides detailed instructions for setting up and running the Dockerized Simple LMStudio Web UI (Unofficial) project.
 
 ## Prerequisites
 

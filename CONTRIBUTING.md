@@ -1,6 +1,6 @@
-# Contributing to LMStudio Web UI
+# Contributing to Dockerized Simple LMStudio Web UI (Unofficial)
 
-Thank you for your interest in contributing to LMStudio Web UI! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to Dockerized Simple LMStudio Web UI (Unofficial)! This document provides guidelines and information for contributors.
 
 ## Table of Contents
 
@@ -359,6 +359,6 @@ Contributors will be recognized in:
 - Release notes
 - GitHub contributor graph
 
-Thank you for contributing to LMStudio Web UI! 🚀
+Thank you for contributing to Dockerized Simple LMStudio Web UI (Unofficial)! 🚀
 
 
