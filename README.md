@@ -35,6 +35,8 @@ Meanwhile, my homelab has plenty of capacity for a VM running Docker. This appli
 
 If you have a similar setup, you can do the same—fast local inference on your GPU machine, with a lightweight and accessible interface served from your homelab.
 
+Looking for a more lightweight solution?  Try [YorkieDev's LM Studio Chat WebUI(unofficial)](https://github.com/YorkieDev/LMStudioWebUI)
+
 ## Tech Stack
 
 ### Frontend
