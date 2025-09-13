@@ -29,9 +29,11 @@ Download [LM Studio](https://lmstudio.ai/)
 
 ## Use Case
 
-I built this application because I am running a local LM Studio server on an older gaming laptop with a solid GPU.  That same computer, isn't chock full of the resources necessary to also run Docker with the other things I'm running on it, so I decided against Olama and OpenWebUI).  My homelab has available resources for a VM running Docker.  I like running LM Studio on it, it's fast and easy to deal with, and it makes it incredibly easy to discover interesting models.
+I built this application to make better use of my homelab setup. My older gaming laptop has a solid GPU and runs LM Studio quickly and reliably, but it doesn’t have the spare resources to also handle Docker and everything else I run on it. Instead of using solutions like Ollama or OpenWebUI, I chose to dedicate the laptop to running LM Studio alone.
 
-With this application, I can run LMStudio on my older gaming laptop while I run my interface on my LAN through Docker on a VM.  And so can you.
+Meanwhile, my homelab has plenty of capacity for a VM running Docker. This application bridges the two: it lets me run LM Studio on the GPU-equipped laptop while hosting a clean, Dockerized interface on my LAN.
+
+If you have a similar setup, you can do the same—fast local inference on your GPU machine, with a lightweight and accessible interface served from your homelab.
 
 ## Tech Stack
 
