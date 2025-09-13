@@ -2,7 +2,9 @@ This is an unofficial project and is not affiliated with or endorsed by LM Studi
 
 # Dockerized Simple LMStudio Web UI (Unofficial)
 
-A modern, open-source web interface for interacting with Local LLMs via LM Studio over your local network. Built with React, TypeScript, FastAPI, and Docker.
+A modern, open-source web interface for interacting with Local LLMs via LM Studio over your local network. Built with React, TypeScript, FastAPI, and Docker.  This is a personal project and not an unofficial LM Studio project.
+
+Download [LM Studio](https://lmstudio.ai/)
 
 ## Features
 
@@ -19,11 +21,17 @@ A modern, open-source web interface for interacting with Local LLMs via LM Studi
 
 ## Screenshots
 
-<img width="2857" height="1601" alt="Screenshot 2025-09-11 230359" src="https://github.com/user-attachments/assets/91dfcf1f-5150-4227-9a95-5dfaa721ab77" />
+<img width="2863" height="1598" alt="Screenshot 2025-09-12 222656" src="https://github.com/user-attachments/assets/6816f4e1-5d54-44ab-b312-5c3e74da5851" />
 
-<img width="2856" height="1596" alt="Screenshot 2025-09-11 230445" src="https://github.com/user-attachments/assets/700aa76b-d32f-46a7-924e-a4144fbc3b41" />
+<img width="2849" height="1597" alt="Screenshot 2025-09-12 222721" src="https://github.com/user-attachments/assets/a626545f-3466-475c-b94d-fbefbc2c1086" />
 
-<img width="2859" height="1603" alt="Screenshot 2025-09-11 230653" src="https://github.com/user-attachments/assets/ecc3b5c0-5372-4066-8cac-5b6c8d6fbc19" />
+<img width="2861" height="1594" alt="Screenshot 2025-09-12 222743" src="https://github.com/user-attachments/assets/1dd3e453-9223-44ff-b172-3192c5788582" />
+
+## Use Case
+
+I built this application because I am running a local LM Studio server on an older gaming laptop with a solid GPU.  That same computer, isn't chock full of the resources necessary to also run Docker with the other things I'm running on it, so I decided against Olama and OpenWebUI).  My homelab has available resources for a VM running Docker.  I like running LM Studio on it, it's fast and easy to deal with, and it makes it incredibly easy to discover interesting models.
+
+With this application, I can run LMStudio on my older gaming laptop while I run my interface on my LAN through Docker on a VM.  And so can you.
 
 ## Tech Stack
 
