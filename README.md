@@ -2,9 +2,13 @@ This is an unofficial project and is not affiliated with or endorsed by LM Studi
 
 # Dockerized Simple LMStudio Web UI (Unofficial)
 
-A modern, open-source web interface for interacting with Local LLMs via LM Studio over your local network. Built with React, TypeScript, FastAPI, and Docker.  This is a personal project and not an unofficial LM Studio project.
+A modern, open-source web interface for interacting with Local LLMs via LM Studio over your local network. Built with React, TypeScript, FastAPI, and Docker.  This is a personal project and not an official LM Studio project.
 
 Download [LM Studio](https://lmstudio.ai/)
+
+## AI Generated Code
+
+This project was primarily vibe-coded using generative AI through Cursor IDE. It came together through rapid experimentation, quick iterations, and a healthy dose of curiosity. This process reflects my ongoing work exploring how AI can accelerate real-world problem solving — turning rough ideas into working solutions in a fraction of the usual time.
 
 ## Features
 
