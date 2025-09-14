@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to Dockerized Simple LMStudio Web UI (Unofficial)! This document provides guidelines and information for contributors.
 
+Much of this project was developed using generative AI via Cursor IDE, as part of my ongoing work experimenting with AI-driven development. By leveraging AI tools, I was able to rapidly prototype, refine, and deploy a functional solution to a real-world use case, significantly reducing the typical development cycle while maintaining a strong focus on practical outcomes.  You are also welcome to use AI generated code in your contribution as a part of this project.
+
 ## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
