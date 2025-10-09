@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { MessageSquare, Trash2, Plus } from 'lucide-react'
-import { listChats, deleteChat } from '../lib/api'
+import { useState, useEffect, useRef } from 'react'
+import { MessageSquare, Trash2, Plus, Pencil } from 'lucide-react'
+import { listChats, deleteChat, renameChat } from '../lib/api'
 
 interface Chat {
   id: number
@@ -10,16 +10,20 @@ interface Chat {
 }
 
 interface ChatHistoryPanelProps {
-  onChatSelect: (chatId: number) => void
-  onNewChat: () => void
-  currentChatId?: number
-  refreshTrigger?: number // Add a trigger to refresh the chat list
+  onChatSelect: (chatId: number) => void;
+  onNewChat: () => void;
+  currentChatId?: number;
+  refreshTrigger?: number;
+  onChatRenamed?: () => void;
 }
 
-export default function ChatHistoryPanel({ onChatSelect, onNewChat, currentChatId, refreshTrigger }: ChatHistoryPanelProps) {
+export default function ChatHistoryPanel({ onChatSelect, onNewChat, currentChatId, refreshTrigger, onChatRenamed }: ChatHistoryPanelProps) {
   const [chats, setChats] = useState<Chat[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deletingChatId, setDeletingChatId] = useState<number | null>(null)
+  const [editingChatId, setEditingChatId] = useState<number | null>(null)
+  const [editingChatName, setEditingChatName] = useState<string>('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     loadChats()
@@ -30,6 +34,13 @@ export default function ChatHistoryPanel({ onChatSelect, onNewChat, currentChatI
       loadChats()
     }
   }, [refreshTrigger])
+
+  useEffect(() => {
+    if (editingChatId !== null && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [editingChatId])
 
   const loadChats = async () => {
     try {
@@ -60,6 +71,38 @@ export default function ChatHistoryPanel({ onChatSelect, onNewChat, currentChatI
       } finally {
         setDeletingChatId(null)
       }
+    }
+  }
+
+  const handleRenameStart = (chatId: number, currentName: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditingChatId(chatId)
+    setEditingChatName(currentName)
+  }
+
+  const handleRenameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingChatName(e.target.value)
+  }
+
+  const handleRenameCancel = () => {
+    setEditingChatId(null)
+    setEditingChatName('')
+  }
+
+  const handleRenameSubmit = async (chatId: number) => {
+    if (editingChatId !== chatId || !editingChatName.trim()) {
+      handleRenameCancel()
+      return
+    }
+
+    try {
+      await renameChat(chatId, editingChatName)
+      setChats(chats.map(c => c.id === chatId ? { ...c, name: editingChatName } : c))
+    } catch (error) {
+      console.error('Failed to rename chat:', error)
+      alert('Failed to rename chat.')
+    } finally {
+      handleRenameCancel()
     }
   }
 
@@ -123,7 +166,7 @@ export default function ChatHistoryPanel({ onChatSelect, onNewChat, currentChatI
             {chats.map((chat) => (
               <div
                 key={chat.id}
-                onClick={() => onChatSelect(chat.id)}
+                onClick={() => editingChatId === chat.id ? null : onChatSelect(chat.id)}
                 className={`group relative p-3 rounded-lg cursor-pointer transition-colors mb-1 ${
                   currentChatId === chat.id
                     ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
@@ -131,26 +174,52 @@ export default function ChatHistoryPanel({ onChatSelect, onNewChat, currentChatI
                 }`}
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                      {chat.name}
-                    </h3>
+                  <div className="flex-1 min-w-0 pr-2">
+                    {editingChatId === chat.id ? (
+                      <form onSubmit={(e) => { e.preventDefault(); handleRenameSubmit(chat.id); }}>
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={editingChatName}
+                          onChange={handleRenameChange}
+                          onBlur={() => handleRenameSubmit(chat.id)}
+                          onKeyDown={(e) => e.key === 'Escape' && handleRenameCancel()}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-full bg-white dark:bg-gray-700 border border-blue-500 rounded px-1 py-0 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </form>
+                    ) : (
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {chat.name}
+                      </h3>
+                    )}
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {formatDate(chat.updated_at)}
                     </p>
                   </div>
-                  <button
-                    onClick={(e) => handleDeleteChat(chat.id, e)}
-                    disabled={deletingChatId === chat.id}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-all"
-                    title="Delete chat"
-                  >
-                    {deletingChatId === chat.id ? (
-                      <div className="h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    {editingChatId !== chat.id && (
+                      <button
+                        onClick={(e) => handleRenameStart(chat.id, chat.name, e)}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+                        title="Rename chat"
+                      >
+                        <Pencil className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                      </button>
                     )}
-                  </button>
+                    <button
+                      onClick={(e) => handleDeleteChat(chat.id, e)}
+                      disabled={deletingChatId === chat.id}
+                      className="p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-all"
+                      title="Delete chat"
+                    >
+                      {deletingChatId === chat.id ? (
+                        <div className="h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

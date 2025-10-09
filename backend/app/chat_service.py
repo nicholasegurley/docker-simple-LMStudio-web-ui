@@ -105,3 +105,18 @@ def generate_chat_name_from_prompt(prompt: str) -> str:
         name = "New Chat"
     
     return name
+
+
+def rename_chat(session: Session, chat_id: int, new_name: str) -> Optional[Chat]:
+    """Rename a chat"""
+    chat = session.get(Chat, chat_id)
+    if not chat:
+        return None
+
+    chat.name = new_name
+    chat.updated_at = datetime.utcnow()
+    session.add(chat)
+    session.commit()
+    session.refresh(chat)
+    logger.info(f"Renamed chat {chat_id} to: {new_name}")
+    return chat

@@ -10,6 +10,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [newMessage, setNewMessage] = useState<{ role: string; content: string } | undefined>(undefined)
   const [chatHistoryRefreshTrigger, setChatHistoryRefreshTrigger] = useState(0)
+  const [chatRenameTrigger, setChatRenameTrigger] = useState(0)
 
   const handleResult = (newResult: { content: string; raw: any; chat_id: number }) => {
     setResult(newResult)
@@ -48,6 +49,11 @@ export default function Home() {
     setNewMessage(undefined)
   }
 
+  const handleChatRenamed = () => {
+    setChatHistoryRefreshTrigger(prev => prev + 1)
+    setChatRenameTrigger(prev => prev + 1)
+  }
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
       {/* Chat History Panel */}
@@ -56,21 +62,24 @@ export default function Home() {
         onNewChat={handleNewChat}
         currentChatId={currentChatId}
         refreshTrigger={chatHistoryRefreshTrigger}
+        onChatRenamed={handleChatRenamed}
       />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Conversation View */}
-        <div className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           <Conversation 
             chatId={currentChatId} 
             newMessage={newMessage} 
             onMessageProcessed={handleMessageProcessed}
+            onChatRenamed={handleChatRenamed}
+            refreshTrigger={chatRenameTrigger}
           />
         </div>
 
         {/* Query Form */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
           <QueryForm
             onResult={handleResult}
             onError={handleError}

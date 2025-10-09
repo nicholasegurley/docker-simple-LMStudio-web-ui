@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { User, Bot, Copy, Check } from 'lucide-react'
-import { getChat } from '../lib/api'
+import { User, Bot, Copy, Check, Pencil } from 'lucide-react'
+import { getChat, renameChat } from '../lib/api'
 
 interface ChatMessage {
   id: number
@@ -21,21 +21,34 @@ interface ConversationProps {
   chatId?: number
   newMessage?: { role: string; content: string }
   onMessageProcessed?: () => void
+  onChatRenamed?: () => void
+  refreshTrigger?: number
 }
 
-export default function Conversation({ chatId, newMessage, onMessageProcessed }: ConversationProps) {
+export default function Conversation({ chatId, newMessage, onMessageProcessed, onChatRenamed, refreshTrigger }: ConversationProps) {
   const [chat, setChat] = useState<Chat | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editingName, setEditingName] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (chatId) {
       loadChat(chatId)
+      setIsEditingName(false)
     } else {
       setChat(null)
     }
-  }, [chatId])
+  }, [chatId, refreshTrigger])
+
+  useEffect(() => {
+    if (isEditingName && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [isEditingName])
 
   useEffect(() => {
     if (newMessage && chat) {
@@ -171,20 +184,81 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed }:
     )
   }
 
+  const handleRenameStart = () => {
+    if (!chat) return
+    setIsEditingName(true)
+    setEditingName(chat.name)
+  }
+
+  const handleRenameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingName(e.target.value)
+  }
+
+  const handleRenameCancel = () => {
+    setIsEditingName(false)
+    setEditingName('')
+  }
+
+  const handleRenameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!chat || !editingName.trim() || editingName.trim() === chat.name) {
+      handleRenameCancel()
+      return
+    }
+
+    try {
+      await renameChat(chat.id, editingName.trim())
+      setChat(prev => prev ? { ...prev, name: editingName.trim() } : null)
+      if (onChatRenamed) {
+        onChatRenamed()
+      }
+    } catch (error) {
+      console.error('Failed to rename chat:', error)
+      alert('Failed to rename chat.')
+    } finally {
+      handleRenameCancel()
+    }
+  }
+
   return (
     <div className="flex-1 flex flex-col">
       {/* Chat Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {chat.name}
-        </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center space-x-2">
+          {isEditingName ? (
+            <form onSubmit={handleRenameSubmit} className="flex-1">
+              <input
+                ref={inputRef}
+                type="text"
+                value={editingName}
+                onChange={handleRenameChange}
+                onBlur={handleRenameCancel}
+                onKeyDown={(e) => e.key === 'Escape' && handleRenameCancel()}
+                className="text-lg font-semibold bg-transparent w-full focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 -ml-1"
+              />
+            </form>
+          ) : (
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+              {chat.name}
+            </h2>
+          )}
+          {!isEditingName && (
+            <button
+              onClick={handleRenameStart}
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              title="Rename chat"
+            >
+              <Pencil className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            </button>
+          )}
+        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           {chat.messages.length} messages
         </p>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {chat.messages.map((message) => (
           <div
             key={message.id}

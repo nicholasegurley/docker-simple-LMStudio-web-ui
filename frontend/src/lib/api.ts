@@ -101,4 +101,7 @@ export async function deleteChat(chatId: number) {
   return (await api.delete(`/chats/${chatId}`)).data;
 }
 
+export async function renameChat(chatId: number, newName: string) {
+  return (await api.put(`/chats/${chatId}/rename`, { name: newName })).data;
+}
 

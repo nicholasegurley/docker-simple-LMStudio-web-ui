@@ -30,6 +30,10 @@ class PersonaIn(BaseModel):
     system_prompt: str
 
 
+class ChatRenameIn(BaseModel):
+    name: str
+
+
 class PersonaOut(BaseModel):
     id: int
     name: str
