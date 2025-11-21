@@ -33,6 +33,7 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed, o
   const [editingName, setEditingName] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (chatId) {
@@ -199,8 +200,16 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed, o
     setEditingName('')
   }
 
-  const handleRenameSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleRenameSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault()
+    }
+    // Clear any pending blur timeout
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current)
+      blurTimeoutRef.current = null
+    }
+    
     if (!chat || !editingName.trim() || editingName.trim() === chat.name) {
       handleRenameCancel()
       return
@@ -220,6 +229,13 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed, o
     }
   }
 
+  const handleRenameBlur = () => {
+    // Use a small timeout to allow click events (like the edit button) to process first
+    blurTimeoutRef.current = setTimeout(() => {
+      handleRenameSubmit()
+    }, 200)
+  }
+
   return (
     <div className="flex-1 flex flex-col">
       {/* Chat Header */}
@@ -232,8 +248,16 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed, o
                 type="text"
                 value={editingName}
                 onChange={handleRenameChange}
-                onBlur={handleRenameCancel}
-                onKeyDown={(e) => e.key === 'Escape' && handleRenameCancel()}
+                onBlur={handleRenameBlur}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    if (blurTimeoutRef.current) {
+                      clearTimeout(blurTimeoutRef.current)
+                      blurTimeoutRef.current = null
+                    }
+                    handleRenameCancel()
+                  }
+                }}
                 className="text-lg font-semibold bg-transparent w-full focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 -ml-1"
               />
             </form>

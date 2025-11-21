@@ -8,7 +8,7 @@ import logging
 from app.db import init_db
 from app.deps import get_session
 from app.models import Persona, Setting, Chat, ChatMessage
-from app.schemas import SettingOut, SettingIn, PersonaIn, ChatOut, ChatResponseOut, ChatIn
+from app.schemas import SettingOut, SettingIn, PersonaIn, ChatOut, ChatResponseOut, ChatIn, ChatRenameIn
 from app.settings_service import get_lm_studio_base_url, set_lm_studio_base_url, get_context_message_count, set_context_message_count
 from app.personas_service import (
     list_personas,
@@ -22,6 +22,7 @@ from app.chat_service import (
     get_chat,
     list_chats,
     delete_chat,
+    rename_chat,
     add_message,
     get_chat_messages,
     get_recent_messages_for_context,
@@ -322,6 +323,45 @@ async def delete_chat_endpoint(chat_id: int, session: Session = Depends(get_sess
     except Exception as e:
         logger.error(f"Failed to delete chat: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to delete chat: {str(e)}")
+
+
+@app.put("/api/chats/{chat_id}/rename", response_model=ChatOut)
+async def rename_chat_endpoint(
+    chat_id: int,
+    payload: ChatRenameIn,
+    session: Session = Depends(get_session),
+):
+    """Rename a chat"""
+    try:
+        chat = rename_chat(session, chat_id, payload.name)
+        if not chat:
+            raise HTTPException(status_code=404, detail="Chat not found")
+        
+        # Get all messages for this chat
+        messages = get_chat_messages(session, chat_id)
+        
+        # Convert messages to ChatMessageOut format
+        message_outs = []
+        for msg in messages:
+            message_outs.append({
+                "id": msg.id,
+                "role": msg.role,
+                "content": msg.content,
+                "created_at": msg.created_at
+            })
+        
+        return {
+            "id": chat.id,
+            "name": chat.name,
+            "created_at": chat.created_at,
+            "updated_at": chat.updated_at,
+            "messages": message_outs
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to rename chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to rename chat: {str(e)}")
 
 
 if __name__ == "__main__":

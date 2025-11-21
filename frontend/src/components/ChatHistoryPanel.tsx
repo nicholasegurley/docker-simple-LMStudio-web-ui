@@ -24,6 +24,7 @@ export default function ChatHistoryPanel({ onChatSelect, onNewChat, currentChatI
   const [editingChatId, setEditingChatId] = useState<number | null>(null)
   const [editingChatName, setEditingChatName] = useState<string>('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     loadChats()
@@ -90,20 +91,43 @@ export default function ChatHistoryPanel({ onChatSelect, onNewChat, currentChatI
   }
 
   const handleRenameSubmit = async (chatId: number) => {
+    // Clear any pending blur timeout
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current)
+      blurTimeoutRef.current = null
+    }
+    
     if (editingChatId !== chatId || !editingChatName.trim()) {
       handleRenameCancel()
       return
     }
 
+    // Find the current chat to check if name changed
+    const currentChat = chats.find(c => c.id === chatId)
+    if (currentChat && editingChatName.trim() === currentChat.name) {
+      handleRenameCancel()
+      return
+    }
+
     try {
-      await renameChat(chatId, editingChatName)
-      setChats(chats.map(c => c.id === chatId ? { ...c, name: editingChatName } : c))
+      await renameChat(chatId, editingChatName.trim())
+      setChats(chats.map(c => c.id === chatId ? { ...c, name: editingChatName.trim() } : c))
+      if (onChatRenamed) {
+        onChatRenamed()
+      }
     } catch (error) {
       console.error('Failed to rename chat:', error)
       alert('Failed to rename chat.')
     } finally {
       handleRenameCancel()
     }
+  }
+
+  const handleRenameBlur = (chatId: number) => {
+    // Use a small timeout to allow click events (like buttons) to process first
+    blurTimeoutRef.current = setTimeout(() => {
+      handleRenameSubmit(chatId)
+    }, 200)
   }
 
   const formatDate = (dateString: string) => {
@@ -182,8 +206,16 @@ export default function ChatHistoryPanel({ onChatSelect, onNewChat, currentChatI
                           type="text"
                           value={editingChatName}
                           onChange={handleRenameChange}
-                          onBlur={() => handleRenameSubmit(chat.id)}
-                          onKeyDown={(e) => e.key === 'Escape' && handleRenameCancel()}
+                          onBlur={() => handleRenameBlur(chat.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                              if (blurTimeoutRef.current) {
+                                clearTimeout(blurTimeoutRef.current)
+                                blurTimeoutRef.current = null
+                              }
+                              handleRenameCancel()
+                            }
+                          }}
                           onClick={(e) => e.stopPropagation()}
                           className="w-full bg-white dark:bg-gray-700 border border-blue-500 rounded px-1 py-0 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
