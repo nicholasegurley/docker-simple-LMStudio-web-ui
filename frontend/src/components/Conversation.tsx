@@ -258,7 +258,7 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed, o
                     handleRenameCancel()
                   }
                 }}
-                className="text-lg font-semibold bg-transparent w-full focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 -ml-1"
+                className="text-lg font-semibold bg-transparent w-full text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 -ml-1"
               />
             </form>
           ) : (
