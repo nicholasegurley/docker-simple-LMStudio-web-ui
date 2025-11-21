@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { User, Bot, Copy, Check, Pencil } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { getChat, renameChat } from '../lib/api'
 
 interface ChatMessage {
@@ -316,9 +318,50 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed, o
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
                 }`}
               >
-                <div className="whitespace-pre-wrap text-sm">
-                  {message.content}
-                </div>
+                {message.role === 'assistant' ? (
+                  <div className="prose prose-sm dark:prose-invert max-w-none text-sm">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        // Customize code blocks
+                        code({ node, inline, className, children, ...props }) {
+                          const match = /language-(\w+)/.exec(className || '')
+                          return !inline ? (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          ) : (
+                            <code className="bg-gray-200 dark:bg-gray-800 px-1 py-0.5 rounded text-sm" {...props}>
+                              {children}
+                            </code>
+                          )
+                        },
+                        // Customize pre blocks
+                        pre({ children }) {
+                          return (
+                            <pre className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg overflow-x-auto">
+                              {children}
+                            </pre>
+                          )
+                        },
+                        // Customize links
+                        a({ children, ...props }) {
+                          return (
+                            <a className="text-blue-600 dark:text-blue-400 hover:underline" {...props}>
+                              {children}
+                            </a>
+                          )
+                        },
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-wrap text-sm">
+                    {message.content}
+                  </div>
+                )}
                 <div
                   className={`flex items-center justify-between mt-1 ${
                     message.role === 'user'

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Copy, Check } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface ResultCardProps {
   content: string
@@ -38,10 +40,43 @@ export default function ResultCard({ content, raw }: ResultCardProps) {
         </button>
       </div>
       
-      <div className="prose dark:prose-invert max-w-none">
-        <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200">
+      <div className="prose dark:prose-invert max-w-none text-gray-800 dark:text-gray-200">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            // Customize code blocks
+            code({ node, inline, className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '')
+              return !inline ? (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              ) : (
+                <code className="bg-gray-200 dark:bg-gray-800 px-1 py-0.5 rounded text-sm" {...props}>
+                  {children}
+                </code>
+              )
+            },
+            // Customize pre blocks
+            pre({ children }) {
+              return (
+                <pre className="bg-gray-200 dark:bg-gray-800 p-3 rounded-lg overflow-x-auto">
+                  {children}
+                </pre>
+              )
+            },
+            // Customize links
+            a({ children, ...props }) {
+              return (
+                <a className="text-blue-600 dark:text-blue-400 hover:underline" {...props}>
+                  {children}
+                </a>
+              )
+            },
+          }}
+        >
           {content}
-        </div>
+        </ReactMarkdown>
       </div>
 
       {copied && (
