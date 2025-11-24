@@ -239,6 +239,9 @@ async def chat_endpoint(
             content = response["choices"][0].get("message", {}).get("content", "")
         
         # Save messages to database
+        # Log the prompt length and first/last 100 chars for debugging
+        prompt_preview = payload.prompt[:100] + "..." if len(payload.prompt) > 200 else payload.prompt
+        logger.info(f"Saving user message to database - Length: {len(payload.prompt)}, Preview: {prompt_preview}")
         add_message(session, chat.id, "user", payload.prompt)
         add_message(session, chat.id, "assistant", content)
         

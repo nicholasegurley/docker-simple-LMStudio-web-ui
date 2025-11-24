@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { User, Bot, Copy, Check, Pencil } from 'lucide-react'
+import { User, Bot, Copy, Check, Pencil, FileText } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { getChat, renameChat } from '../lib/api'
+import { parseMessage, ParsedFile } from '../utils/messageParser'
 
 interface ChatMessage {
   id: number
@@ -358,8 +359,41 @@ export default function Conversation({ chatId, newMessage, onMessageProcessed, o
                     </ReactMarkdown>
                   </div>
                 ) : (
-                  <div className="whitespace-pre-wrap text-sm">
-                    {message.content}
+                  <div className="text-sm">
+                    {(() => {
+                      const parsed = parseMessage(message.content);
+                      return (
+                        <>
+                          {parsed.files.length > 0 && (
+                            <div className="mb-3 space-y-2">
+                              {parsed.files.map((file: ParsedFile, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="bg-blue-400/20 dark:bg-blue-600/20 border border-blue-300 dark:border-blue-500 rounded p-2"
+                                >
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                    <span className="font-semibold text-blue-700 dark:text-blue-300 text-xs">
+                                      {file.name}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs bg-blue-100 dark:bg-blue-900/30 text-gray-900 dark:text-gray-100 rounded p-2 max-h-40 overflow-y-auto whitespace-pre-wrap font-mono">
+                                    {file.content.length > 500
+                                      ? `${file.content.substring(0, 500)}... (${file.content.length} characters total)`
+                                      : file.content}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {parsed.text && (
+                            <div className="whitespace-pre-wrap">
+                              {parsed.text}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
                 <div

@@ -50,6 +50,8 @@ def delete_chat(session: Session, chat_id: int) -> bool:
 
 def add_message(session: Session, chat_id: int, role: str, content: str) -> ChatMessage:
     """Add a message to a chat"""
+    # Log content length for debugging
+    logger.info(f"add_message called - chat_id: {chat_id}, role: {role}, content_length: {len(content)}")
     message = ChatMessage(chat_id=chat_id, role=role, content=content)
     session.add(message)
     
@@ -60,7 +62,8 @@ def add_message(session: Session, chat_id: int, role: str, content: str) -> Chat
     
     session.commit()
     session.refresh(message)
-    logger.info(f"Added {role} message to chat {chat_id}")
+    # Verify what was actually saved
+    logger.info(f"Added {role} message to chat {chat_id}, saved content length: {len(message.content)}")
     return message
 
 
